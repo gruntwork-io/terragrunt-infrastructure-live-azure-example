@@ -107,8 +107,8 @@ This repository contains the following:
 
 The following conventions are some best practices for an `infrastructure-live` repository, as defined by Gruntwork:
 
-- Primarily use [Terragrunt](https://terragrunt.gruntwork.io/) configurations to define your IaC.
-- Avoid using OpenTofu/Terraform directly in `infrastructure-live` repositories. Instead, prefer to author them in an `infrastructure-catalog` repository (see [terragrunt-infrastructure-catalog-example](https://github.com/gruntwork-io/terragrunt-infrastructure-catalog-example)).
+- Primarily use [Terragrunt](https://terragrunt.com) configurations to define your IaC.
+- Avoid using OpenTofu/Terraform directly in `infrastructure-live` repositories. Instead, prefer to author OpenTofu/Terraform configurations in an `infrastructure-catalog` repository (see [terragrunt-infrastructure-catalog-example](https://github.com/gruntwork-io/terragrunt-infrastructure-catalog-example)).
 - Follow [Trunk-Based Development](https://trunkbaseddevelopment.com/). The source of truth for your infrastructure is the code in the `main` branch (or whatever you configure the default branch to be).
 - Avoid using [OpenTofu/Terraform Workspaces](https://opentofu.org/docs/language/state/workspaces/). Instead, use [Terragrunt units](https://terragrunt.gruntwork.io/docs/getting-started/terminology/#unit) to isolate state.
 - Use [Stacks](https://terragrunt.gruntwork.io/docs/getting-started/terminology/#stack) to organize your infrastructure into logical collections of units.
