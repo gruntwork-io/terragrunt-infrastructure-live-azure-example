@@ -1,6 +1,6 @@
 [![Maintained by Gruntwork.io](https://img.shields.io/badge/maintained%20by-gruntwork.io-%235849a6.svg)](https://gruntwork.io/?ref=repo_terragrunt-infra-live-azure-example)
 
-# Example infrastructure-live for Terragrunt on Azure (with Stacks)
+# Example infrastructure-live for Terragrunt on Azure
 
 This repository, along with the [terragrunt-infrastructure-catalog-example repository](https://github.com/gruntwork-io/terragrunt-infrastructure-catalog-example),
 offers a best practice system for organizing your Infrastructure as Code (IaC) on Azure so that you can maintain your
@@ -24,7 +24,6 @@ This repository provides a practical blueprint for managing Azure infrastructure
 * **Best-Practice Separation:** Clearly separates environment-specific "live" configurations (this repo) from reusable infrastructure patterns (via an `infrastructure-catalog`).
 * **DRY Configuration:** Reduces code duplication using hierarchical configuration files (`root.hcl`, `subscription.hcl`, `region.hcl`).
 * **Concrete End-to-End Example:** Deploys the foundation for an application (resource group, storage, container registry, and a managed identity with only the access it needs) across distinct production and non-production environments.
-* **Secure State by Default:** Stores state in Azure Storage, reached with Entra ID instead of storage account keys.
 * **Reproducible Tooling:** Includes `mise` configuration for easy installation of pinned versions of Terragrunt and OpenTofu/Terraform.
 
 ## Getting Started
@@ -152,7 +151,7 @@ Before you start provisioning the infrastructure in this repository, you'll want
    export EX_APP_PREFIX="acme"
    ```
 
-   It's required, because storage account and container registry names are unique across all of Azure, and they can't contain dashes. The stacks name their resources with it (e.g. `acmeappdev-rg`, `acmeappdevsa`, `acmeappdevacr`), and the state backend uses it too.
+   Storage account and container registry names must be unique across all of Azure and can't contain dashes. The stacks and the state backend use the prefix in their names (e.g. `acmeappdev-rg`, `acmeappdevsa`, `acmeappdevacr`).
 
 4. Review the `remote_state` block in the `root.hcl` file. It stores state in an Azure Storage account in each subscription and region.
 
@@ -181,7 +180,7 @@ Before you start provisioning the infrastructure in this repository, you'll want
 
    Storage account names are unique across all of Azure and limited to 24 lowercase letters and digits, so the name is `tgex` followed by a short hash of the app prefix, the subscription, and the region. You can change the `tgex` prefix and the `-tfstate` resource group name if you like. See the [azurerm backend docs](https://docs.terragrunt.com/features/units/state-backend/azurerm/) for all the options.
 
-   With `use_azuread_auth`, Terragrunt and OpenTofu reach the state with your Entra ID identity instead of storage account keys, and `assign_blob_data_role` grants that identity the `Storage Blob Data Contributor` role on the storage account if it doesn't have it yet.
+   `use_azuread_auth` makes Terragrunt and OpenTofu reach the state with your Entra ID identity instead of storage account keys. `assign_blob_data_role` gives that identity the `Storage Blob Data Contributor` role on the storage account if it doesn't have it yet.
 
    If you deploy everything to a single Azure subscription, both `non-prod` and `prod` store state in the same storage account, under different keys.
 
