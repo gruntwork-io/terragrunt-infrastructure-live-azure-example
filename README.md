@@ -153,18 +153,21 @@ Before you start provisioning the infrastructure in this repository, you'll want
 
    Storage account and container registry names must be unique across all of Azure and can't contain dashes. The stacks and the state backend use the prefix in their names (e.g. `acmeappdev-rg`, `acmeappdevsa`, `acmeappdevacr`).
 
-4. Review the `remote_state` block in the `root.hcl` file. It stores state in an Azure Storage account in each subscription and region.
+4. Review the `remote_state` block in the `root.hcl` file. It stores state in an Azure Storage account in each subscription.
 
    ```hcl
    remote_state {
      backend = "azurerm"
      config = {
-       subscription_id      = local.subscription_id
-       resource_group_name  = "${local.app_prefix}-tfstate"
-       storage_account_name = "tgex${substr(sha1("${local.app_prefix}${local.subscription_id}${local.location}"), 0, 16)}"
+       subscription_id     = local.subscription_id
+       resource_group_name = "${local.app_prefix}-tfstate"
+
+       # The app prefix already makes the name unique, so it needs no hash
+       storage_account_name = "${local.app_prefix}${replace(local.subscription_name, "-", "")}tf"
        container_name       = "tfstate"
        key                  = "${path_relative_to_include()}/tofu.tfstate"
        location             = local.location
+       enable_soft_delete   = true
 
        # Use Entra ID instead of account keys to reach the state, and grant the
        # current identity the blob data role it needs for that.
@@ -178,11 +181,13 @@ Before you start provisioning the infrastructure in this repository, you'll want
    }
    ```
 
-   Storage account names are unique across all of Azure and limited to 24 lowercase letters and digits, so the name is `tgex` followed by a short hash of the app prefix, the subscription, and the region. You can change the `tgex` prefix and the `-tfstate` resource group name if you like. See the [azurerm backend docs](https://docs.terragrunt.com/features/units/state-backend/azurerm/) for all the options.
+   Storage account names are unique across all of Azure, at most 24 characters, and only lowercase letters and digits. The name is the app prefix, the subscription name without dashes, and `tf`, so state lives in `acmenonprodtf` and `acmeprodtf`. With a 15 character prefix, the `non-prod` name is exactly 24 characters. You can change the `tf` suffix and the `-tfstate` resource group name if you like. See the [azurerm backend docs](https://docs.terragrunt.com/features/units/state-backend/azurerm/) for all the options.
 
    `use_azuread_auth` makes Terragrunt and OpenTofu reach the state with your Entra ID identity instead of storage account keys. `assign_blob_data_role` gives that identity the `Storage Blob Data Contributor` role on the storage account if it doesn't have it yet.
 
-   If you deploy everything to a single Azure subscription, both `non-prod` and `prod` store state in the same storage account, under different keys.
+   Terragrunt turns on blob versioning by default, so every state change keeps the previous version. `enable_soft_delete` also keeps deleted blobs and containers for 7 days, so a deleted state file or `tfstate` container can be restored.
+
+   Each subscription directory gets its own storage account, so `non-prod` and `prod` keep separate state even if you deploy both to a single Azure subscription. All regions in a subscription share its storage account, under different keys. Terragrunt creates the account in the region of the first stack you bootstrap.
 
 ### Provisioning a single stack
 
