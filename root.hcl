@@ -12,8 +12,9 @@ locals {
   region_vars = read_terragrunt_config(find_in_parent_folders("region.hcl"))
 
   # Extract the variables we need for easy access
-  subscription_id = local.subscription_vars.locals.subscription_id
-  location        = local.region_vars.locals.location
+  subscription_id   = local.subscription_vars.locals.subscription_id
+  subscription_name = local.subscription_vars.locals.subscription_name
+  location          = local.region_vars.locals.location
 
   # Storage account names are unique across all of Azure, so state names start with this prefix
   app_prefix = get_env("EX_APP_PREFIX")
@@ -32,19 +33,19 @@ provider "azurerm" {
 EOF
 }
 
-# Configure Terragrunt to automatically store tfstate files in an Azure Storage account, one per subscription and region.
-#
-# Storage account names are unique across all of Azure and limited to 24 lowercase letters and digits, so the name is
-# a short hash of the app prefix, the subscription, and the region.
+# Configure Terragrunt to automatically store tfstate files in an Azure Storage account, one per subscription.
 remote_state {
   backend = "azurerm"
   config = {
-    subscription_id      = local.subscription_id
-    resource_group_name  = "${local.app_prefix}-tfstate"
-    storage_account_name = "tgex${substr(sha1("${local.app_prefix}${local.subscription_id}${local.location}"), 0, 16)}"
+    subscription_id     = local.subscription_id
+    resource_group_name = "${local.app_prefix}-tfstate"
+
+    # The app prefix already makes the name unique, so it needs no hash
+    storage_account_name = "${local.app_prefix}${replace(local.subscription_name, "-", "")}tf"
     container_name       = "tfstate"
     key                  = "${path_relative_to_include()}/tofu.tfstate"
     location             = local.location
+    enable_soft_delete   = true
 
     # Use Entra ID instead of account keys to reach the state, and grant the
     # current identity the blob data role it needs for that.
