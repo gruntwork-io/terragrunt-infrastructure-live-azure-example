@@ -1,12 +1,10 @@
 locals {
-  // Automatically load region-level variables
   region_vars = read_terragrunt_config(find_in_parent_folders("region.hcl"))
 
   name = "${get_env("EX_APP_PREFIX")}-hello-dev"
 }
 
 unit "service" {
-  // Pin the catalog version in your own repo by adding ?ref=<tag> to the source
   source = "github.com/gruntwork-io/terragrunt-infrastructure-catalog-example//units/azure/container-instance-service"
 
   path = "service"
