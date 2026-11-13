@@ -89,7 +89,7 @@ This repository contains the following:
 
 - `terragrunt.stack.hcl` files: These files define a stack of Terragrunt units.
 
-  Both the `terragrunt.stack.hcl` files in this repository use the `app-foundation` stack, which provisions what an application needs before it can run, including:
+  The `terragrunt.stack.hcl` files in the two `app-foundation` directories use the `app-foundation` stack, which provisions what an application needs before it can run, including:
 
   - Resource Group
   - Storage Account, with a private `data` blob container and an `items` table
@@ -98,6 +98,8 @@ This repository contains the following:
   - Alerts on the storage account's availability and latency (`prod` only)
 
   This example doesn't deploy application code, so it ends with the resources above and their outputs.
+
+  The `terragrunt.stack.hcl` file in `non-prod/eastus/hello-world` has a single unit instead: a container in Azure Container Instances that runs Microsoft's sample `aci-helloworld` image, in its own resource group, with a public IP address. It doesn't depend on the `app-foundation` stack.
 
   The configurations for these resources aren't defined in this repository, but are instead defined in the [terragrunt-infrastructure-catalog-example](https://github.com/gruntwork-io/terragrunt-infrastructure-catalog-example) repository.
 
@@ -188,6 +190,35 @@ Before you start provisioning the infrastructure in this repository, you'll want
    Terragrunt turns on blob versioning by default, so every state change keeps the previous version. `enable_soft_delete` also keeps deleted blobs and containers for 7 days, so a deleted state file or `tfstate` container can be restored.
 
    Each subscription directory gets its own storage account, so `non-prod` and `prod` keep separate state even if you deploy both to a single Azure subscription. All regions in a subscription share its storage account, under different keys. Terragrunt creates the account in the region of the first stack you bootstrap.
+
+### Provisioning a hello world
+
+The quickest way to check your setup is the `hello-world` stack. It has one unit, a container in Azure Container Instances with a public IP address.
+
+1. Navigate to the directory of the stack.
+
+   ```bash
+   cd non-prod/eastus/hello-world
+   ```
+
+2. Apply it. The `--backend-bootstrap` flag lets Terragrunt create the state resource group, storage account and container if they don't exist yet.
+
+   ```bash
+   terragrunt run --all --non-interactive --backend-bootstrap apply
+   ```
+
+3. Call the container, or open its URL in a browser.
+
+   ```bash
+   $ curl --silent "$(terragrunt stack output --raw service.url)" | grep '<h1>'
+   <h1>Welcome to Azure Container Instances!</h1>
+   ```
+
+4. Destroy it when you're done.
+
+   ```bash
+   terragrunt run --all --non-interactive destroy
+   ```
 
 ### Provisioning a single stack
 
