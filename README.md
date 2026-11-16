@@ -99,7 +99,7 @@ This repository contains the following:
 
   This example doesn't deploy application code, so it ends with the resources above and their outputs.
 
-  The `terragrunt.stack.hcl` file in `non-prod/eastus/hello-world` has a single unit instead: an Azure Storage static website that serves a "Hello, world!" page over HTTPS, in its own resource group. It doesn't depend on the `app-foundation` stack.
+  The `terragrunt.stack.hcl` file in `non-prod/eastus/hello-world` uses two units of the catalog instead, a resource group and a storage account, and adds a static website to the storage account that serves a "Hello, world!" page over HTTPS. It doesn't depend on the `app-foundation` stack.
 
   The configurations for these resources aren't defined in this repository, but are instead defined in the [terragrunt-infrastructure-catalog-example](https://github.com/gruntwork-io/terragrunt-infrastructure-catalog-example) repository.
 
@@ -193,7 +193,7 @@ Before you start provisioning the infrastructure in this repository, you'll want
 
 ### Provisioning a hello world
 
-The quickest way to check your setup is the `hello-world` stack. It has one unit, an Azure Storage static website that serves one page over HTTPS.
+The quickest way to check your setup is the `hello-world` stack. It has two units, a resource group and a storage account with a static website that serves one page over HTTPS.
 
 1. Navigate to the directory of the stack.
 
