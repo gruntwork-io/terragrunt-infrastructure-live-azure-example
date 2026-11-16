@@ -99,7 +99,7 @@ This repository contains the following:
 
   This example doesn't deploy application code, so it ends with the resources above and their outputs.
 
-  The `terragrunt.stack.hcl` file in `non-prod/eastus/hello-world` has a single unit instead: a container in Azure Container Instances that runs Microsoft's sample `aci-helloworld` image, in its own resource group, with a public IP address. It doesn't depend on the `app-foundation` stack.
+  The `terragrunt.stack.hcl` file in `non-prod/eastus/hello-world` has a single unit instead: an Azure Storage static website that serves a "Hello, world!" page over HTTPS, in its own resource group. It doesn't depend on the `app-foundation` stack.
 
   The configurations for these resources aren't defined in this repository, but are instead defined in the [terragrunt-infrastructure-catalog-example](https://github.com/gruntwork-io/terragrunt-infrastructure-catalog-example) repository.
 
@@ -193,7 +193,7 @@ Before you start provisioning the infrastructure in this repository, you'll want
 
 ### Provisioning a hello world
 
-The quickest way to check your setup is the `hello-world` stack. It has one unit, a container in Azure Container Instances with a public IP address.
+The quickest way to check your setup is the `hello-world` stack. It has one unit, an Azure Storage static website that serves one page over HTTPS.
 
 1. Navigate to the directory of the stack.
 
@@ -207,11 +207,14 @@ The quickest way to check your setup is the `hello-world` stack. It has one unit
    terragrunt run --all --non-interactive --backend-bootstrap apply
    ```
 
-3. Call the container, or open its URL in a browser.
+3. Print the HTTPS URL of the website, then call it or open it in a browser.
 
    ```bash
-   $ curl --silent "$(terragrunt stack output --raw service.url)" | grep '<h1>'
-   <h1>Welcome to Azure Container Instances!</h1>
+   $ terragrunt stack output --raw website.url
+   https://acmehellodev.z13.web.core.windows.net/
+
+   $ curl --silent "$(terragrunt stack output --raw website.url)"
+   <h1>Hello, world!</h1>
    ```
 
 4. Destroy it when you're done.
